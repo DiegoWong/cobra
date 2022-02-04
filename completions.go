@@ -3,6 +3,7 @@ package cobra
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -504,7 +505,8 @@ func completeRequireFlags(finalCmd *Command, toComplete string) []string {
 	return completions
 }
 
-func checkIfFlagCompletion(finalCmd *Command, args []string, lastArg string) (*pflag.Flag, []string, string, error) {
+func checkIfFlagCompletion(finalCmd *Command, args []string, lastArg string) (*pflag.Flag, []string, string, error) {	
+	CompDebugln("in checkIfFlagCompletion finalCmd.DisableFlagParsing = " + strconv.FormatBool(finalCmd.DisableFlagParsing), true)
 	if finalCmd.DisableFlagParsing {
 		// We only do flag completion if we are allowed to parse flags
 		// This is important for commands which have requested to do their own flag completion.
@@ -572,6 +574,7 @@ func checkIfFlagCompletion(finalCmd *Command, args []string, lastArg string) (*p
 	}
 
 	flag := findFlag(finalCmd, flagName)
+	CompDebugln("in checkIfFlagCompletion flag = " + fmt.Sprintf("%+v", flag), true)
 	if flag == nil {
 		// Flag not supported by this command, the interspersed option might be set so return the original args
 		return nil, args, orgLastArg, &flagCompError{subCommand: finalCmd.Name(), flagName: flagName}
@@ -749,11 +752,13 @@ to your powershell profile.
 }
 
 func findFlag(cmd *Command, name string) *pflag.Flag {
-	flagSet := cmd.Flags()
+	flagSet := cmd.Flags()		
 	if len(name) == 1 {
 		// First convert the short flag into a long flag
 		// as the cmd.Flag() search only accepts long flags
-		if short := flagSet.ShorthandLookup(name); short != nil {
+		short := flagSet.ShorthandLookup(name);
+		CompDebugln(fmt.Sprintf(" in findflag %+v", short), true)
+		if  short != nil {
 			name = short.Name
 		} else {
 			set := cmd.InheritedFlags()
